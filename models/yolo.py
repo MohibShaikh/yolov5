@@ -114,7 +114,7 @@ class Detect(nn.Module):
                 z.append(y.view(bs, self.na * nx * ny, self.no))
 
         return x if self.training else (torch.cat(z, 1),) if self.export else (torch.cat(z, 1), x)
-
+        
     def _make_grid(self, nx=20, ny=20, i=0, torch_1_10=check_version(torch.__version__, "1.10.0")):
         """Generates a mesh grid for anchor boxes with optional compatibility for torch versions < 1.10."""
         d = self.anchors[i].device

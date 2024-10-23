@@ -320,6 +320,49 @@ def run(
         strip_optimizer(weights[0])  # update model (to fix SourceChangeWarning)
 
 
+## 
+predi = model(im, augment=augment, visualize = visualize)
+pred = postprocessing(predi)
+def postprocessing(x):
+    grid = [torch.empty(0) for _ in range(3)]
+    z = []
+    anchor_grid = [torch.empty(0) for _ in range(3)]
+    stride = torch.tensor([ 8., 16., 32.], device='cuda:0')
+    # anchors = torch.tensor([[10.,13., 16.,30., 33.,23.],[30.,61., 62.,45., 59.,119.],[116.,90., 156.,198., 373.,326.]] , device='cuda:0')
+    anchors = torch.tensor([[1.25000,  1.62500, 2.00000,  3.75000,4.12500,  2.87500],
+        [1.87500,  3.81250, 3.87500,  2.81250, 3.68750,  7.43750],
+        [ 3.62500,  2.81250, 4.87500,  6.18750, 11.65625, 10.18750]], device='cuda:0')
+    anchors = torch.tensor(anchors).float().view(3,-1,2)
+    # anchors[0] = anchors[0] / stride[0]
+    # anchors[1] = anchors[1] / stride[1]
+    # anchors[2] = anchors[2] / stride[2]
+
+    for i in range(3):
+        bs, _, ny, nx = x[i].shape  # x(bs,255,20,20) to x(bs,3,20,20,85)
+        x[i] = x[i].view(bs, 3, 18, ny, nx).permute(0, 1, 3, 4, 2).contiguous()
+
+        if grid[i].shape[2:4] != x[i].shape[2:4]:
+            grid[i], anchor_grid[i] = make_grid(nx,ny,i,anchors,stride)
+
+            
+        xy, wh, conf = x[i].sigmoid().split((2, 2, 13 + 1), 4)
+        xy = (xy * 2 + grid[i]) * stride[i]  # xy
+        wh = (wh * 2) ** 2 * anchor_grid[i]  # wh
+        y = torch.cat((xy, wh, conf), 4)
+        z.append(y.view(bs, 3 * nx * ny, 18))
+
+    return (torch.cat(z, 1), x)
+def make_grid(nx=20, ny=20, i=0,anchors = None, stride = None, torch_1_10=check_version(torch.__version__, '1.10.0')):
+    d = anchors[i].device
+    t = anchors[i].dtype
+
+    shape = 1, 3, ny, nx, 2  # grid shape
+    y, x = torch.arange(ny, device=d, dtype=t), torch.arange(nx, device=d, dtype=t)
+    yv, xv = torch.meshgrid(y, x, indexing='ij') if torch_1_10 else torch.meshgrid(y, x)  # torch>=0.7 compatibility
+    grid = torch.stack((xv, yv), 2).expand(shape) - 0.5  # add grid offset, i.e. y = 2.0 * x - 0.5
+    anchor_grid = (anchors[i] * stride[i]).view((1, 3, 1, 1, 2)).expand(shape)
+    return grid, anchor_grid
+
 def parse_opt():
     """
     Parse command-line arguments for YOLOv5 detection, allowing custom inference options and model configurations.

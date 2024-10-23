@@ -1,0 +1,12 @@
+names:
+- defected
+nc: 1
+roboflow:
+  license: CC BY 4.0
+  project: aritos
+  url: https://universe.roboflow.com/hum-kqm9m/aritos/dataset/3
+  version: 3
+  workspace: hum-kqm9m
+test: ../test/images
+train: aritos-3/train/images
+val: aritos-3/valid/images
