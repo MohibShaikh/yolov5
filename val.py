@@ -29,7 +29,8 @@ from pathlib import Path
 import numpy as np
 import torch
 from tqdm import tqdm
-from utils.torch_utils import prune
+import torch
+from torch.quantization import quantize_dynamic
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]  # YOLOv5 root directory
@@ -283,7 +284,7 @@ def run(
 # Data
     data = check_dataset(data)  # check
         # Apply prunin
-    prune(model, amount=0.15)  # 30% sparsity
+    quantized_model = quantize_dynamic(model, {torch.nn.Linear}, dtype=torch.qint8)
         
         # Save the pruned model
     torch.save(model, 'PRUNED.pt')
