@@ -281,6 +281,11 @@ def run(
 
         # Data
         data = check_dataset(data)  # check
+        # Apply pruning
+        prune(model, amount=0.3\15)  # 30% sparsity
+        
+        # Save the pruned model
+        torch.save(model, 'PRUNED.pt')
 
     # Configure
     model.eval()
