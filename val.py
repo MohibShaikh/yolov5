@@ -280,13 +280,13 @@ def run(
                 batch_size = 1  # export.py models default to batch-size 1
                 LOGGER.info(f"Forcing --batch-size 1 square inference (1,3,{imgsz},{imgsz}) for non-PyTorch models")
 
-        # Data
-        data = check_dataset(data)  # check
-        # Apply pruning
-        prune(model, amount=0.15)  # 30% sparsity
+# Data
+    data = check_dataset(data)  # check
+        # Apply prunin
+    prune(model, amount=0.15)  # 30% sparsity
         
         # Save the pruned model
-        torch.save(model, 'PRUNED.pt')
+    torch.save(model, 'PRUNED.pt')
 
     # Configure
     model.eval()
