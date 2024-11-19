@@ -24,7 +24,9 @@ import time
 from copy import deepcopy
 from datetime import datetime, timedelta
 from pathlib import Path
-
+# QAT: Prepare model for Quantization-Aware Training
+import torch.quantization
+    
 try:
     import comet_ml  # must be imported before torch (if installed)
 except ImportError:
@@ -222,6 +224,9 @@ def train(hyp, opt, device, callbacks):
     else:
         model = Model(cfg, ch=3, nc=nc, anchors=hyp.get("anchors")).to(device)  # create
     amp = check_amp(model)  # check AMP
+    # Set QAT configuration for the model
+    model.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm')  # Choose backend ('fbgemm' or 'qnnpack')
+    torch.quantization.prepare_qat(model, inplace=True)
 
     # Freeze
     freeze = [f"model.{x}." for x in (freeze if len(freeze) > 1 else range(freeze[0]))]  # layers to freeze
