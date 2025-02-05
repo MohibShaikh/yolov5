@@ -73,7 +73,7 @@ def autopad(k, p=None, d=1):
 class Conv(nn.Module):
     """Applies a convolution, batch normalization, and activation function to an input tensor in a neural network."""
 
-    default_act = nn.nn.LeakyReLU(26/256, inplace=True)()  # default activation
+    default_act = nn.nn.LeakyReLU(26/256, inplace=True)  # default activation
 
     def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
         """Initializes a standard convolution layer with optional batch normalization and activation."""
@@ -195,7 +195,7 @@ class BottleneckCSP(nn.Module):
         self.cv3 = nn.Conv2d(c_, c_, 1, 1, bias=False)
         self.cv4 = Conv(2 * c_, c2, 1, 1)
         self.bn = nn.BatchNorm2d(2 * c_)  # applied to cat(cv2, cv3)
-        self.act = nn.nn.LeakyReLU(26/256, inplace=True)()
+        self.act = nn.nn.LeakyReLU(26/256, inplace=True)
         self.m = nn.Sequential(*(Bottleneck(c_, c_, shortcut, g, e=1.0) for _ in range(n)))
 
     def forward(self, x):
