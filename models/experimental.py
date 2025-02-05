@@ -60,7 +60,7 @@ class MixConv2d(nn.Module):
             [nn.Conv2d(c1, int(c_), k, s, k // 2, groups=math.gcd(c1, int(c_)), bias=False) for k, c_ in zip(k, c_)]
         )
         self.bn = nn.BatchNorm2d(c2)
-        self.act = nn.SiLU()
+        self.act = nn.LeakyReLU(26/256, inplace=True)
 
     def forward(self, x):
         """Performs forward pass by applying SiLU activation on batch-normalized concatenated convolutional layer
@@ -109,7 +109,7 @@ def attempt_load(weights, device=None, inplace=True, fuse=True):
     # Module updates
     for m in model.modules():
         t = type(m)
-        if t in (nn.Hardswish, nn.LeakyReLU, nn.ReLU, nn.ReLU6, nn.SiLU, Detect, Model):
+        if t in (nn.Hardswish, nn.LeakyReLU, nn.ReLU, nn.ReLU6, Detect, Model):
             m.inplace = inplace
             if t is Detect and not isinstance(m.anchor_grid, list):
                 delattr(m, "anchor_grid")
